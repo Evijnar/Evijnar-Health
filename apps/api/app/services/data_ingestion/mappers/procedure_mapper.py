@@ -8,7 +8,7 @@ from typing import List
 
 from ..models import RawProcedureData, NormalizedProcedureData, IngestSource
 from ..errors import MapperError, LLMError, LLMParsingError
-from ...utils.llm_client import get_llm_client
+from ....utils.llm_client import get_llm_client
 
 logger = logging.getLogger("evijnar.ingest.procedure_mapper")
 

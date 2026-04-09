@@ -9,7 +9,7 @@ import hashlib
 import logging
 import asyncio
 from typing import Optional, Dict, Any, Any as CallableReturnType
-import aioredis
+import redis.asyncio as redis
 
 from anthropic import Anthropic, AsyncAnthropic
 from anthropic import APIError, RateLimitError, APIConnectionError
@@ -23,7 +23,7 @@ class LLMCache:
 
     def __init__(self, redis_url: Optional[str] = None):
         self.redis_url = redis_url or settings.redis_url if hasattr(settings, 'redis_url') else "redis://localhost:6379"
-        self.redis: Optional[aioredis.Redis] = None
+        self.redis: Optional[redis.Redis] = None
         self.enabled = self.redis_url is not None
 
     async def connect(self):

@@ -12,7 +12,7 @@ import asyncio
 
 from sqlalchemy.exc import IntegrityError
 
-from ..models import (
+from .models import (
     RawHospitalData,
     NormalizedHospitalData,
     NormalizedProcedureData,
@@ -22,9 +22,9 @@ from ..models import (
     IngestSource,
     IngestMetrics,
 )
-from ..errors import IngestError, DatabaseError, EngineError
-from ..loaders import HHSLoader, EHDSLoader, ABDMLoader, JsonLoader
-from ..mappers import HospitalMapper, ProcedureMapper, NormalizerMapper
+from .errors import IngestError, DatabaseError, EngineError
+from .loaders import HHSLoader, EHDSLoader, ABDMLoader, JsonLoader
+from .mappers import HospitalMapper, ProcedureMapper, NormalizerMapper
 from ...utils.llm_client import get_llm_client
 from ...repositories import (
     HospitalRepository,
