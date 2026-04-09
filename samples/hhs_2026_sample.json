@@ -1,0 +1,76 @@
+[
+  {
+    "hospital": {
+      "name": "Mayo Clinic Rochester",
+      "facility_ccn": "240073",
+      "npi": "1720098274",
+      "type": "Acute Care Hospital",
+      "description": "Academic medical center specializing in complex patient care",
+      "address": {
+        "street": "200 First Street SW",
+        "city": "Rochester",
+        "state": "Minnesota",
+        "zip_code": "55902"
+      },
+      "contact": {
+        "phone": "+15074662000",
+        "email": "international@mayo.edu",
+        "website": "https://www.mayoclinic.org"
+      }
+    },
+    "pricing_information": [
+      {
+        "description": "Total Knee Replacement",
+        "code": "27447",
+        "standard_charge": 45000,
+        "currency": "USD"
+      },
+      {
+        "description": "CT scan head/brain without contrast",
+        "code": "70450",
+        "standard_charge": 1200,
+        "currency": "USD"
+      },
+      {
+        "description": "Office visit, established patient, moderate",
+        "code": "99214",
+        "standard_charge": 250,
+        "currency": "USD"
+      }
+    ]
+  },
+  {
+    "hospital": {
+      "name": "Cleveland Clinic Main Campus",
+      "facility_ccn": "360098",
+      "npi": "1710989754",
+      "type": "Tertiary Care Hospital",
+      "description": "Major academic medical center in Ohio",
+      "address": {
+        "street": "9500 Euclid Ave",
+        "city": "Cleveland",
+        "state": "Ohio",
+        "zip_code": "44195"
+      },
+      "contact": {
+        "phone": "+2164445500",
+        "email": "inquiry@ccf.org",
+        "website": "https://www.clevelandclinic.org"
+      }
+    },
+    "pricing_information": [
+      {
+        "description": "Coronary artery bypass graft (CABG)",
+        "code": "33510",
+        "standard_charge": 85000,
+        "currency": "USD"
+      },
+      {
+        "description": "Cardiac catheterization",
+        "code": "93455",
+        "standard_charge": 8500,
+        "currency": "USD"
+      }
+    ]
+  }
+]

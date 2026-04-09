@@ -1,0 +1,76 @@
+name = "evijnar-api"
+version = "0.1.0"
+description = "Evijnar Global Health Arbitrage Exchange - FastAPI Backend"
+authors = [{name = "Evijnar Team"}]
+requires-python = ">=3.11"
+
+dependencies = [
+    "fastapi==0.104.1",
+    "uvicorn[standard]==0.24.0",
+    "pydantic==2.5.0",
+    "sqlalchemy==2.0.23",
+    "alembic==1.12.1",
+    "python-dotenv==1.0.0",
+    "pydantic-settings==2.1.0",
+    "psycopg2-binary==2.9.9",
+    "python-jose[cryptography]==3.3.0",
+    "python-multipart==0.0.6",
+    "httpx==0.25.1",
+    "aioredis==2.0.1",
+    "cryptography==41.0.7",
+    "anthropic==0.31.0",
+    "pytest==7.4.3",
+    "pytest-asyncio==0.21.1",
+    "passlib[bcrypt]==1.7.4",
+    "pyotp==2.9.0",
+    "pyqrcode==1.9.2",
+]
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["app"]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest-cov==4.1.0",
+    "black==23.11.0",
+    "ruff==0.1.8",
+    "mypy==1.7.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--strict-markers --tb=short --disable-warnings"
+markers = [
+    "asyncio: marks tests as async",
+    "integration: marks tests as integration tests",
+    "slow: marks tests as slow",
+]
+timeout = 300
+
+[tool.coverage.run]
+source = ["app"]
+omit = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
+precision = 2

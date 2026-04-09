@@ -1,0 +1,630 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// AUTHENTICATION & USER MANAGEMENT (GDPR/HIPAA Compliant)
+// ============================================================================
+
+model User {
+  id                  String      @id @default(cuid())
+  email               String      @unique @db.VarChar(255)
+  phone_encrypted     String?     // E.164 format encrypted with patient's key
+  role                UserRole    @default(PATIENT)
+
+  // GDPR: Right to be forgotten
+  is_deleted          Boolean     @default(false)
+  deleted_at          DateTime?
+
+  // Authentication
+  password_hash       String
+  mfa_enabled         Boolean     @default(false)
+  mfa_secret_encrypted String?
+
+  // HIPAA: Audit trail
+  created_at          DateTime    @default(now())
+  updated_at          DateTime    @updatedAt
+  last_login          DateTime?
+
+  // Relations
+  patient             Patient?
+  healthcare_provider HealthcareProvider?
+  surgeon             Surgeon?
+  audit_logs          AuditLog[]
+  recovery_sessions   RecoverySession[]
+  financing_records   RuralFinancing[]
+
+  @@index([email])
+  @@index([is_deleted])
+}
+
+enum UserRole {
+  PATIENT
+  HEALTHCARE_PROVIDER
+  SURGEON
+  ADMIN
+}
+
+model AuditLog {
+  id                  String      @id @default(cuid())
+  user_id             String
+  user                User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  action              String      // e.g., "VIEWED_PATIENT_DATA", "BOOKING_CREATED"
+  resource_type       String      // e.g., "Hospital", "Patient", "Recovery"
+  resource_id         String
+
+  // HIPAA: Detailed log
+  ip_address          String?
+  user_agent          String?
+
+  created_at          DateTime    @default(now())
+
+  @@index([user_id])
+  @@index([created_at])
+  @@index([resource_type, resource_id])
+}
+
+// ============================================================================
+// PATIENT PROFILES (Encrypted PII)
+// ============================================================================
+
+model Patient {
+  id                  String      @id @default(cuid())
+  user_id             String      @unique
+  user                User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  // Encrypted PII (stored with patient's zero-knowledge key)
+  first_name_encrypted String?
+  last_name_encrypted  String?
+  date_of_birth_encrypted String?
+
+  // Medical context (minimal for zero-knowledge)
+  blood_group         String?     // O+, A-, etc.
+  age_approximated    Int?        // For rural settings where DOB unknown
+
+  // Geographic data (supports rural routing)
+  country_code        String      @db.Char(2) // ISO 3166-1 alpha-2
+  state_province      String?     @db.VarChar(100)
+  postal_code_prefix  String?     // First 3 chars only for privacy
+  rural_tier          RuralTier   @default(TIER_2)
+
+  // GDPR
+  consent_given       Boolean     @default(false)
+  consent_timestamp   DateTime?
+  data_deletion_requested_at DateTime?
+
+  created_at          DateTime    @default(now())
+  updated_at          DateTime    @updatedAt
+
+  // Relations
+  medical_records     MedicalRecord[]
+  bookings            HospitalBooking[]
+
+  @@index([country_code, rural_tier])
+  @@index([user_id])
+}
+
+enum RuralTier {
+  TIER_1  // Metro/Urban
+  TIER_2  // Semi-urban
+  TIER_3  // Rural
+}
+
+model MedicalRecord {
+  id                  String      @id @default(cuid())
+  patient_id          String
+  patient             Patient     @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+
+  // Zero-knowledge: encrypted client-side
+  diagnosis_encrypted String?     // ICD-10 code wrapped in patient's key
+  procedure_encrypted String?     // CPT/ICD-10 wrapped in patient's key
+
+  // Timestamp (not encrypted)
+  record_date         DateTime
+  created_at          DateTime    @default(now())
+
+  @@index([patient_id])
+  @@index([record_date])
+}
+
+// ============================================================================
+// GLOBAL HOSPITALS (JCI/NABH Accreditation Hub)
+// ============================================================================
+
+model GlobalHospital {
+  id                  String      @id @default(cuid())
+  name                String      @db.VarChar(255)
+
+  // Accreditation status
+  jci_accredited      Boolean     @default(false)
+  jci_certificate_url String?
+  jci_expires_at      DateTime?
+
+  nabh_accredited     Boolean     @default(false) // India-specific
+  nabh_certificate_url String?
+  nabh_expires_at     DateTime?
+
+  // Geographic data
+  country_code        String      @db.Char(2)
+  state_province      String      @db.VarChar(100)
+  city                String      @db.VarChar(100)
+  latitude            Float
+  longitude           Float
+  postal_code         String      @db.VarChar(20)
+
+  // Contact info
+  phone_primary       String      // E.164
+  email               String
+  website_url         String?
+
+  // Hospital type classification
+  hospital_type       HospitalType
+
+  // Verified 2026 price data (local median for procedures)
+  price_data_verified_at DateTime?
+  price_data_source   String?     // e.g., "HHS_TRANSPARENCY", "EHDS", "ABDM"
+
+  // Quality metrics (aggregated)
+  avg_quality_score   Float       @default(0) // 0-100
+  complication_rate   Float?      // Percentage, validated
+  readmission_rate    Float?      // Percentage, validated
+  patient_reviews_count Int       @default(0)
+
+  is_active           Boolean     @default(true)
+  is_deleted          Boolean     @default(false)
+
+  created_at          DateTime    @default(now())
+  updated_at          DateTime    @updatedAt
+
+  // Relations
+  departments         Department[]
+  price_procedures    ProcedurePrice[]
+  bookings            HospitalBooking[]
+  recovery_providers  RecoveryProvider[]
+
+  @@index([country_code, is_active])
+  @@index([latitude, longitude]) // Geo-spatial queries
+  @@index([jci_accredited, nabh_accredited])
+  @@fulltext([name]) // For full-text search
+}
+
+enum HospitalType {
+  SPECIALTY_CENTER    // CoE
+  GENERAL_HOSPITAL
+  DIAGNOSTIC_CENTER
+  NURSING_HOME
+}
+
+model Department {
+  id                  String      @id @default(cuid())
+  hospital_id         String
+  hospital            GlobalHospital @relation(fields: [hospital_id], references: [id], onDelete: Cascade)
+
+  name                String      @db.VarChar(150)
+  specialization_code String      @db.VarChar(10) // Medical specialization codes
+  head_name           String?
+  phone               String?
+
+  created_at          DateTime    @default(now())
+
+  @@unique([hospital_id, specialization_code])
+  @@index([hospital_id])
+}
+
+// ============================================================================
+// PRICE NORMALIZATION (CPT → ICD-10 → UHI Mapping)
+// ============================================================================
+
+model PriceNormalizer {
+  id                  String      @id @default(cuid())
+
+  // US CPT Code (USA)
+  cpt_code            String      @unique @db.Char(5)
+  cpt_description     String      @db.VarChar(500)
+
+  // Global ICD-10 Standards
+  icd10_code          String      @db.Char(7) // Format: ABC.DE
+  icd10_description   String      @db.VarChar(500)
+
+  // India UHI/ABDM Standard
+  uhi_code            String?     @db.VarChar(50)
+
+  // EHDS mapping (Europe)
+  ehds_identifier     String?     @db.VarChar(50)
+
+  // Clinical context
+  clinical_category   String      @db.VarChar(100)
+  complexity_score    Int         @default(1) // 1-10, used for risk adjustment
+
+  // Average cost basis (for normalization)
+  us_median_cost_usd  Float       // 2026 HHS data
+  validation_date     DateTime    @default(now())
+
+  created_at          DateTime    @default(now())
+  updated_at          DateTime    @updatedAt
+
+  @@index([cpt_code])
+  @@index([icd10_code])
+  @@index([uhi_code])
+  @@index([clinical_category])
+}
+
+// ============================================================================
+// PROCEDURE PRICING (Hospital-Specific, Transparent)
+// ============================================================================
+
+model ProcedurePrice {
+  id                  String      @id @default(cuid())
+  hospital_id         String
+  hospital            GlobalHospital @relation(fields: [hospital_id], references: [id], onDelete: Cascade)
+
+  // Normalization reference
+  normalizer_id       String
+  normalizer          PriceNormalizer @relation(fields: [normalizer_id], references: [id])
+
+  // Pricing breakdown (HIPAA: transparent, auditable)
+  base_price          Float       // Core procedure cost
+  facility_fee        Float?      // Room, equipment
+  anesthesia_fee      Float?
+  surgeon_fee         Float?
+  currency_code       String      @db.Char(3) // ISO 4217
+
+  // Timestamp
+  effective_date      DateTime
+  expires_at          DateTime?
+
+  // Outcome data (for Success-Adjusted Value ranking)
+  success_rate        Float?      // 0-100%
+  complication_rate   Float?      // Post-op complications
+
+  verified_at         DateTime?
+  data_source         String      // e.g., "HHS_API", "HOSPITAL_SELF_REPORT"
+
+  created_at          DateTime    @default(now())
+
+  @@unique([hospital_id, normalizer_id, effective_date])
+  @@index([hospital_id])
+  @@index([normalizer_id])
+}
+
+model ProcedurePriceHospitalRelation {
+  procedure_price_id  String
+  // Connect to HospitalBooking for history
+
+  @@id([procedure_price_id])
+}
+
+// ============================================================================
+// HOSPITAL BOOKINGS (Patient → Hospital Matching)
+// ============================================================================
+
+model HospitalBooking {
+  id                  String      @id @default(cuid())
+  patient_id          String
+  patient             Patient     @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+
+  hospital_id         String
+  hospital            GlobalHospital @relation(fields: [hospital_id], references: [id])
+
+  // Procedure reference
+  procedure_normalizer_id String
+  procedure_normalizer PriceNormalizer @relation(fields: [procedure_normalizer_id], references: [id])
+
+  // Booking details
+  status              BookingStatus @default(INQUIRY)
+  scheduled_date      DateTime
+  estimated_duration_days Int?
+
+  // Success-Adjusted Value Score
+  value_score         Float?      // Rank: lower = better (cost + risk + quality)
+  cost_component      Float?      // Procedure price + travel
+  risk_component      Float?      // Complication rate
+  quality_component   Float?      // Success rate + reviews
+
+  // Financial
+  estimated_total_usd Float?      // All-in cost in USD equivalent
+  currency_applied    String?     @db.Char(3)
+
+  notes               String?     @db.Text
+
+  created_at          DateTime    @default(now())
+  updated_at          DateTime    @updatedAt
+  cancelled_at        DateTime?
+
+  // Relations
+  recovery_session    RecoverySession?
+
+  @@index([patient_id])
+  @@index([hospital_id])
+  @@index([status])
+  @@index([created_at])
+}
+
+enum BookingStatus {
+  INQUIRY
+  ESTIMATED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+// ============================================================================
+// RECOVERY BRIDGE (IoMT Monitoring: 30-day Post-Op)
+// ============================================================================
+
+model RecoverySession {
+  id                  String      @id @default(cuid())
+  booking_id          String      @unique
+  booking             HospitalBooking @relation(fields: [booking_id], references: [id], onDelete: Cascade)
+
+  patient_id          String
+  patient             Patient     @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+
+  // Surgeon assignment
+  assigned_surgeon_id String?
+  assigned_surgeon    Surgeon?    @relation(fields: [assigned_surgeon_id], references: [id])
+
+  // Local clinic assignment (in patient's region)
+  assigned_provider_id String?
+  assigned_provider   RecoveryProvider? @relation(fields: [assigned_provider_id], references: [id])
+
+  // Session timeline
+  start_date          DateTime    // Post-op day 0
+  end_date            DateTime    @default(dbgenerated("NOW() + INTERVAL '30 days'")) // Auto 30-day window
+
+  recovery_status     RecoveryStatus @default(ACTIVE)
+
+  // Alert tracking
+  alert_count         Int         @default(0)
+  critical_alert_count Int        @default(0)
+  has_escalated       Boolean     @default(false)
+  escalation_at       DateTime?
+
+  created_at          DateTime    @default(now())
+  updated_at          DateTime    @updatedAt
+
+  // Relations
+  vitals              RecoveryVital[]
+  alerts              RecoveryAlert[]
+
+  @@index([patient_id])
+  @@index([recovery_status])
+  @@index([start_date])
+}
+
+enum RecoveryStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ESCALATED
+  CLOSED
+}
+
+model RecoveryVital {
+  id                  String      @id @default(cuid())
+  recovery_session_id String
+  recovery_session    RecoverySession @relation(fields: [recovery_session_id], references: [id], onDelete: Cascade)
+
+  // IoMT data (raw values from wearable)
+  heart_rate          Int?        // BPM
+  blood_oxygen_spo2   Int?        // 95-100% typically
+  temperature_celsius Float?      // 36-38°C normal
+  systolic_bp         Int?        // mmHg
+  diastolic_bp        Int?        // mmHg
+  respiratory_rate    Int?        // breaths/min
+
+  // Encrypted notes (if flagged)
+  symptom_notes_encrypted String?
+
+  // Alert trigger (computed at data ingestion)
+  alert_trigger       Boolean     @default(false)
+  alert_severity      AlertSeverity?
+
+  // Device metadata
+  device_id           String?     // Wearable ID (anonymized)
+  device_type         String?     // e.g., "FITBIT", "APPLE_WATCH", "CUSTOM_MONITOR"
+
+  collected_at        DateTime    // When vitals were measured
+  created_at          DateTime    @default(now()) // When ingested
+
+  @@index([recovery_session_id])
+  @@index([collected_at])
+  @@index([alert_trigger])
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+model RecoveryAlert {
+  id                  String      @id @default(cuid())
+  recovery_session_id String
+  recovery_session    RecoverySession @relation(fields: [recovery_session_id], references: [id], onDelete: Cascade)
+
+  vital_id            String?     // Reference to triggering vital (if from vitals)
+
+  alert_type          String      // e.g., "HIGH_FEVER", "RAPID_HEART_RATE", "LOW_SPO2"
+  severity            AlertSeverity
+
+  // Context
+  patient_value       String?     // e.g., "39.2°C"
+  normal_range        String?     // e.g., "36-38°C"
+  recommendation      String?     // Clinical recommendation
+
+  // Escalation
+  acknowledged_at     DateTime?
+  acknowledged_by_id  String?     // Surgeon or provider ID
+  action_taken        String?     @db.Text
+  resolved_at         DateTime?
+
+  created_at          DateTime    @default(now())
+  updated_at          DateTime    @updatedAt
+
+  @@index([recovery_session_id])
+  @@index([severity])
+  @@index([created_at])
+}
+
+model RecoveryProvider {
+  id                  String      @id @default(cuid())
+  hospital_id         String
+  hospital            GlobalHospital @relation(fields: [hospital_id], references: [id], onDelete: Cascade)
+
+  // Local clinic info (within patient's region)
+  name                String      @db.VarChar(255)
+  phone               String      // E.164
+  email               String
+
+  // Capacity
+  current_patients    Int         @default(0)
+  max_concurrent      Int         @default(10)
+
+  // Geographic coverage (distance from center)
+  coverage_radius_km  Int         @default(50)
+
+  is_active           Boolean     @default(true)
+
+  created_at          DateTime    @default(now())
+
+  // Relations
+  recovery_sessions   RecoverySession[]
+  surgeons            Surgeon[]
+
+  @@index([hospital_id, is_active])
+}
+
+model Surgeon {
+  id                  String      @id @default(cuid())
+  user_id             String      @unique
+  user                User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  license_number      String      @unique
+  country_of_license  String      @db.Char(2)
+  specialization      String      @db.VarChar(150)
+
+  // Credentials
+  years_experience    Int
+  total_procedures    Int         @default(0)
+  success_rate        Float?      // Historical
+
+  // Recovery Bridge assignment
+  assigned_providers  RecoveryProvider[]
+  recovery_sessions   RecoverySession[]
+
+  is_verified         Boolean     @default(false)
+  verified_at         DateTime?
+
+  created_at          DateTime    @default(now())
+
+  @@index([user_id])
+  @@index([country_of_license])
+}
+
+// ============================================================================
+// HEALTHCARE PROVIDER (Referral Partners)
+// ============================================================================
+
+model HealthcareProvider {
+  id                  String      @id @default(cuid())
+  user_id             String      @unique
+  user                User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  organization_name   String      @db.VarChar(255)
+  license_number      String
+  country_code        String      @db.Char(2)
+
+  // Referral API credentials (encrypted)
+  api_key_encrypted   String      // For referrals
+  webhook_url         String?
+
+  is_verified         Boolean     @default(false)
+  verified_at         DateTime?
+
+  created_at          DateTime    @default(now())
+
+  @@index([user_id])
+  @@index([country_code])
+}
+
+// ============================================================================
+// RURAL FINANCING (UPI 2.0 Micro-Financing & Health-EMI)
+// ============================================================================
+
+model RuralFinancing {
+  id                  String      @id @default(cuid())
+  patient_id          String
+  user                User        @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+
+  // Transaction reference
+  booking_id          String?     // Link to hospital booking
+
+  // Financing type
+  financing_type      FinancingType
+
+  // UPI 2.0 Details (India-specific)
+  upi_transaction_id  String?     @unique // e.g., NPCI reference
+  upi_merchant_id     String?
+
+  // Health-EMI Amortization
+  principal_amount    Float       // Loan amount in local currency
+  currency_code       String      @db.Char(3)
+
+  interest_rate       Float       @default(0) // APR %
+  tenure_months       Int         // 3, 6, 12, 24, etc.
+
+  emi_amount          Float       // Monthly installment
+  emi_schedule        String      @db.Text // JSON: [{due_date, amount, status}, ...]
+
+  // Payment tracking
+  total_paid          Float       @default(0)
+  next_due_date       DateTime?
+  last_payment_date   DateTime?
+
+  // Status
+  status              FinancingStatus @default(PENDING
+
+  created_at          DateTime    @default(now())
+  updated_at          DateTime    @updatedAt
+
+  @@index([patient_id])
+  @@index([upi_transaction_id])
+  @@index([status])
+}
+
+enum FinancingType {
+  UPI_MICRO_LOAN      // UPI 2.0 based
+  HEALTH_EMI          // Traditional EMI
+  SUBSIDY_GRANT       // Government/NGO subsidy
+  INSURANCE_CLAIM     // Insurance reimbursement
+}
+
+enum FinancingStatus {
+  PENDING
+  APPROVED
+  DISBURSED
+  PAYING
+  COMPLETED
+  DEFAULTED
+}
+
+// ============================================================================
+// INDEXES & Full-Text Search
+// ============================================================================
+
+model SearchIndex {
+  id                  String      @id @default(cuid())
+  entity_type         String      // "hospital", "procedure", etc.
+  entity_id           String
+  search_text         String      @db.Text
+
+  @@unique([entity_type, entity_id])
+}

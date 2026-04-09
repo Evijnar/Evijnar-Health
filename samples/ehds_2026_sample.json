@@ -1,0 +1,91 @@
+[
+  {
+    "organisation_id": "DE-BER-001",
+    "name": "Charité – Universitätsmedizin Berlin",
+    "organisation_type": "University Hospital",
+    "description": "Leading academic medical center in Berlin providing comprehensive healthcare services",
+    "location": {
+      "address": "Charité-Platz 1",
+      "city": "Berlin",
+      "region": "Berlin",
+      "postal_code": "10117",
+      "country_code": "DE"
+    },
+    "contact": {
+      "phone": "+493028090",
+      "email": "info@charite.de",
+      "website": "https://www.charite.de"
+    },
+    "healthcare_services": [
+      {
+        "service_name": "Orthopädische Chirurgie - Kniegelenkersatz",
+        "description": "Total knee replacement surgery with prosthesis placement",
+        "specialization": "Orthopädic Surgery",
+        "specialization_code": "ORTHO",
+        "icd10_code": "M17.11",
+        "pricing": {
+          "base_price": 28000,
+          "facility_fee": 3500,
+          "anesthesia_fee": 1800,
+          "currency": "EUR"
+        },
+        "outcome_data": {
+          "success_rate": 96.2,
+          "complication_rate": 2.1
+        }
+      },
+      {
+        "service_name": "Kardiologie - Kathetheruntersuchung",
+        "description": "Cardiac catheterization for diagnostic evaluation",
+        "specialization": "Cardiology",
+        "specialization_code": "CARD",
+        "icd10_code": "R00.0",
+        "pricing": {
+          "base_price": 6500,
+          "facility_fee": 800,
+          "currency": "EUR"
+        },
+        "outcome_data": {
+          "success_rate": 98.5,
+          "complication_rate": 1.2
+        }
+      }
+    ]
+  },
+  {
+    "organisation_id": "ES-MAD-015",
+    "name": "Hospital Clínico San Carlos",
+    "organisation_type": "General Hospital",
+    "description": "Major tertiary hospital in Madrid, Spain",
+    "location": {
+      "address": "Calle de Martín Lagos",
+      "city": "Madrid",
+      "region": "Comunidad de Madrid",
+      "postal_code": "28040",
+      "country_code": "ES"
+    },
+    "contact": {
+      "phone": "+34913303000",
+      "email": "info@hcsc.es",
+      "website": "https://www.hcsc.es"
+    },
+    "healthcare_services": [
+      {
+        "service_name": "Oncología - Quimioterapia IV",
+        "description": "Intravenous chemotherapy administration for cancer treatment",
+        "specialization": "Oncology",
+        "specialization_code": "ONCO",
+        "icd10_code": "C80.1",
+        "pricing": {
+          "base_price": 4200,
+          "facility_fee": 600,
+          "currency": "EUR"
+        },
+        "outcome_data": {
+          "success_rate": 85.0,
+          "complication_rate": 8.5
+        }
+      }
+    ]
+  }
+]

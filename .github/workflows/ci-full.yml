@@ -1,0 +1,95 @@
+name: CI-Full
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration-tests:
+    name: Phase 3 Integration Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: evijnar_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install -U pip setuptools wheel
+          pip install -e .
+          pip install pytest-cov
+
+      - name: Run Alembic migrations
+        env:
+          DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/evijnar_test
+        run: |
+          alembic upgrade head
+
+      - name: Run Phase 3 Integration Tests
+        env:
+          DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/evijnar_test
+          PYTHONPATH: /home/runner/work/Evijnar/Evijnar/apps/api
+        run: |
+          python -m pytest tests/test_integration_phase3.py -v --cov=app --cov-report=xml --cov-report=html --tb=short
+
+      - name: Run Database Verification
+        env:
+          DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/evijnar_test
+        run: |
+          python scripts/verify_data.py
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          flags: integration-tests
+          name: phase3-tests
+          fail_ci_if_error: false
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: htmlcov/
+          retention-days: 7
+
+      - name: Test Report
+        if: always()
+        run: |
+          echo "## Phase 3 Integration Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cat coverage.txt 2>/dev/null || echo "Coverage report not available" >> $GITHUB_STEP_SUMMARY

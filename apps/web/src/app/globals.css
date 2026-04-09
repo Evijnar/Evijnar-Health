@@ -1,0 +1,181 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Evijnar Trust-Focused Palette */
+    --color-navy: #001F3F;
+    --color-navy-dark: #000D1A;
+    --color-navy-light: #0A3D62;
+    --color-white: #FFFFFF;
+    --color-white-off: #F8F9FA;
+    --color-emerald: #10B981;
+    --color-emerald-dark: #059669;
+    --color-emerald-light: #ECFDF5;
+    --color-red-alert: #EF4444;
+    --color-red-light: #FEE2E2;
+    --color-gray-light: #E5E7EB;
+    --color-gray-medium: #9CA3AF;
+    --color-gray-dark: #374151;
+  }
+
+  * {
+    @apply antialiased;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-white;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Deep Navy background for premium feel */
+  .bg-navy {
+    @apply bg-[#001F3F];
+  }
+
+  .bg-navy-light {
+    @apply bg-[#0A3D62];
+  }
+
+  .bg-emerald {
+    @apply bg-[#10B981];
+  }
+
+  .bg-emerald-light {
+    @apply bg-[#ECFDF5];
+  }
+
+  /* Text colors */
+  .text-navy {
+    @apply text-[#001F3F];
+  }
+
+  .text-emerald {
+    @apply text-[#10B981];
+  }
+
+  /* Borders */
+  .border-navy {
+    @apply border-[#001F3F];
+  }
+}
+
+@layer components {
+  /* Button Styles */
+  .btn-primary {
+    @apply px-4 py-2 bg-emerald hover:bg-emerald-dark text-white font-medium rounded-lg transition-colors duration-200 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-white border-2 border-navy text-navy font-medium rounded-lg transition-colors duration-200 hover:bg-gray-50 active:scale-95;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-sm font-medium rounded;
+  }
+
+  /* Card Styles */
+  .card {
+    @apply bg-white border border-gray-200 rounded-xl shadow-sm transition-all duration-200;
+  }
+
+  .card-hover {
+    @apply card hover:shadow-md cursor-pointer;
+  }
+
+  .card-navy {
+    @apply bg-gradient-to-br from-navy to-navy-light text-white rounded-xl shadow-md;
+  }
+
+  /* Badge Styles */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .badge-success {
+    @apply bg-emerald-light text-emerald-dark;
+  }
+
+  .badge-alert {
+    @apply bg-red-light text-red-alert;
+  }
+
+  .badge-navy {
+    @apply bg-navy text-white;
+  }
+
+  /* Input Styles */
+  .input-base {
+    @apply w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald focus:border-transparent transition-colors duration-200;
+  }
+
+  /* Safe/Alert Status Indicator */
+  .status-safe {
+    @apply flex items-center gap-2 text-emerald font-semibold;
+  }
+
+  .status-alert {
+    @apply flex items-center gap-2 text-red-alert font-semibold;
+  }
+
+  /* Typography */
+  .text-h1 {
+    @apply text-3xl md:text-4xl font-bold text-navy;
+  }
+
+  .text-h2 {
+    @apply text-2xl md:text-3xl font-bold text-navy;
+  }
+
+  .text-h3 {
+    @apply text-xl md:text-2xl font-semibold text-navy;
+  }
+
+  .text-body {
+    @apply text-base text-gray-dark;
+  }
+
+  .text-caption {
+    @apply text-sm text-gray-medium;
+  }
+
+  /* Responsive Grid */
+  .grid-responsive {
+    @apply grid gap-4 md:gap-6;
+  }
+
+  .grid-2-col {
+    @apply grid-responsive grid-cols-1 md:grid-cols-2;
+  }
+}
+
+/* Smooth transitions for mobile */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Optimize for low bandwidth */
+img {
+  @apply max-w-full h-auto;
+}
+
+/* Loading skeleton animation (low bandwidth optimized) */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

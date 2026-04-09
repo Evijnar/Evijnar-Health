@@ -1,0 +1,61 @@
+# apps/api/app/models/__init__.py
+"""
+ORM models for Evijnar database.
+"""
+
+from .database import (
+    Base,
+    User,
+    AuditLog,
+    Patient,
+    MedicalRecord,
+    GlobalHospital,
+    Department,
+    PriceNormalizer,
+    ProcedurePrice,
+    HospitalBooking,
+    RecoverySession,
+    RecoveryVital,
+    RecoveryAlert,
+    Surgeon,
+    HealthcareProvider,
+    RecoveryProvider,
+    RuralFinancing,
+    # Enums
+    UserRole,
+    HospitalType,
+    RuralTier,
+    BookingStatus,
+    RecoveryStatus,
+    AlertSeverity,
+    FinancingType,
+    FinancingStatus,
+)
+
+__all__ = [
+    "Base",
+    "User",
+    "AuditLog",
+    "Patient",
+    "MedicalRecord",
+    "GlobalHospital",
+    "Department",
+    "PriceNormalizer",
+    "ProcedurePrice",
+    "HospitalBooking",
+    "RecoverySession",
+    "RecoveryVital",
+    "RecoveryAlert",
+    "Surgeon",
+    "HealthcareProvider",
+    "RecoveryProvider",
+    "RuralFinancing",
+    "UserRole",
+    "HospitalType",
+    "RuralTier",
+    "BookingStatus",
+    "RecoveryStatus",
+    "AlertSeverity",
+    "FinancingType",
+    "FinancingStatus",
+]

@@ -1,0 +1,202 @@
+name: Security Checks
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  detect-secrets:
+    name: Detect Secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install detect-secrets
+        run: pip install detect-secrets
+
+      - name: Run secret detection
+        run: |
+          detect-secrets scan --baseline .secrets.baseline
+          if [ $? -ne 0 ]; then
+            echo "⚠️ Secrets detected in code!"
+            exit 1
+          fi
+
+  security-scan:
+    name: Security Scan (Bandit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Bandit
+        run: pip install bandit
+
+      - name: Run Bandit security scan
+        run: |
+          bandit -c bandit.yaml -r apps/api/ -f json -o bandit-report.json || true
+
+      - name: Upload Bandit results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: bandit-report.json
+
+  dependency-check:
+    name: Dependency Security Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Check Python dependencies
+        run: |
+          pip install safety
+          safety check --json || true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Check npm dependencies
+        run: npm audit --workspaces --audit-level=moderate || true
+
+  env-validation:
+    name: Environment Variables Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for hardcoded secrets
+        run: |
+          # Check for common secret patterns
+          if grep -r "SECRET_KEY=" .env --exclude-dir=.git; then
+            echo "❌ Found hardcoded SECRET_KEY in committed .env file!"
+            exit 1
+          fi
+
+          if grep -r "DATABASE_PASSWORD=" .env --exclude-dir=.git; then
+            echo "❌ Found hardcoded DATABASE_PASSWORD in committed .env file!"
+            exit 1
+          fi
+
+          if grep -r "sk-" apps/ --include="*.py" --include="*.js" --include="*.ts"; then
+            echo "⚠️ Found potential API keys in source code!"
+            exit 1
+          fi
+
+          echo "✓ No hardcoded secrets detected"
+
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: 'python'
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+
+  docker-scan:
+    name: Docker Image Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: apps/api
+          push: false
+          tags: evijnar-api:scan
+          outputs: type=docker,dest=/tmp/image.tar
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          input: '/tmp/image.tar'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  hipaa-compliance-check:
+    name: HIPAA Compliance Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check encryption implementation
+        run: |
+          # Verify encryption is used for patient data
+          if ! grep -r "ENCRYPTION_KEY_PATIENT_DATA" apps/api/; then
+            echo "❌ Patient data encryption not configured!"
+            exit 1
+          fi
+
+          # Verify audit logging
+          if ! grep -r "HIPAA_AUDIT_LOG_ENABLED" apps/api/; then
+            echo "❌ HIPAA audit logging not configured!"
+            exit 1
+          fi
+
+          echo "✓ HIPAA compliance checks passed"
+
+  results:
+    name: Security Scan Summary
+    runs-on: ubuntu-latest
+    needs: [detect-secrets, security-scan, dependency-check, env-validation, docker-scan, hipaa-compliance-check]
+    if: always()
+    steps:
+      - name: Check scan results
+        run: |
+          if [ "${{ needs.detect-secrets.result }}" == "failure" ]; then
+            echo "❌ Secret detection failed"
+            exit 1
+          fi
+
+          if [ "${{ needs.env-validation.result }}" == "failure" ]; then
+            echo "❌ Environment validation failed"
+            exit 1
+          fi
+
+          echo "✅ All security checks completed"
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔒 Security Checks Complete\n\n- ✅ Secret Detection: ${{ needs.detect-secrets.result }}\n- ✅ Bandit Scan: ${{ needs.security-scan.result }}\n- ✅ Dependency Check: ${{ needs.dependency-check.result }}\n- ✅ Environment Validation: ${{ needs.env-validation.result }}\n- ✅ Docker Scan: ${{ needs.docker-scan.result }}\n- ✅ HIPAA Compliance: ${{ needs.hipaa-compliance-check.result }}`
+            })

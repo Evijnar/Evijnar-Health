@@ -1,0 +1,22 @@
+{
+  "name": "evijnar-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Global health arbitrage exchange - decentralized healthcare access platform",
+  "scripts": {
+    "dev": "pnpm -r --parallel run dev",
+    "build": "pnpm -r run build",
+    "type-check": "pnpm -r run type-check",
+    "test": "pnpm -r run test",
+    "db:migrate": "cd packages/database && pnpm prisma migrate dev",
+    "db:push": "cd packages/database && pnpm prisma db push",
+    "db:studio": "cd packages/database && pnpm prisma studio"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}

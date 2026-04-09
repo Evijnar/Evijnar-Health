@@ -1,0 +1,184 @@
+[
+  {
+    "facility_id": "IN-DL-APO-001",
+    "facility_name": "Apollo Hospitals Delhi - Sarita Vihar",
+    "facility_type": "Specialty Center",
+    "state": "Delhi",
+    "state_code": "DL",
+    "district": "New Delhi",
+    "city": "New Delhi",
+    "postal_code": "110076",
+    "nabh_accredited": true,
+    "jci_accredited": true,
+    "phone": "+910114016024",
+    "email": "admin@apollodelhi.com",
+    "website": "https://www.apollohospitals.com/delhi",
+    "description": "Multispecialty hospital providing advanced surgical and diagnostic services",
+    "services": [
+      {
+        "service_name": "कुल घुटने की प्रतिस्‍थापन सर्जरी (Total Knee Replacement Surgery)",
+        "description": "Orthopedic surgery for knee joint replacement with prosthesis",
+        "department": "Orthopedics",
+        "department_code": "ORTHO",
+        "uhi_code": "SURG-1001",
+        "pricing": {
+          "total_cost": 1850000,
+          "base_procedure": 1200000,
+          "facility_charges": 350000,
+          "anesthesia": 100000,
+          "surgeon_fee": 200000,
+          "currency": "INR"
+        },
+        "outcomes": {
+          "success_rate": 96.8,
+          "complication_rate": 1.9,
+          "average_los_days": 3
+        }
+      },
+      {
+        "service_name": "कोरोनरी धमनी बाईपास ग्राफ्ट (CABG - Coronary Artery Bypass Graft)",
+        "description": "Cardiac surgery for bypass of blocked coronary arteries",
+        "department": "Cardiology",
+        "department_code": "CARD",
+        "uhi_code": "SURG-2001",
+        "pricing": {
+          "total_cost": 4200000,
+          "base_procedure": 2500000,
+          "facility_charges": 800000,
+          "anesthesia": 400000,
+          "surgeon_fee": 500000,
+          "currency": "INR"
+        },
+        "outcomes": {
+          "success_rate": 94.5,
+          "complication_rate": 4.2,
+          "average_los_days": 7
+        }
+      },
+      {
+        "service_name": "CT स्कैन सिर/मस्तिष्क - बिना विपरीत (CT scan head/brain without contrast)",
+        "description": "Diagnostic imaging of head and brain",
+        "department": "Diagnostic Radiology",
+        "department_code": "RAD",
+        "uhi_code": "DIAG-0051",
+        "pricing": {
+          "total_cost": 8500,
+          "base_procedure": 6500,
+          "facility_charges": 1500,
+          "currency": "INR"
+        },
+        "outcomes": {
+          "success_rate": 99.5,
+          "complication_rate": 0.0,
+          "average_los_days": 0
+        }
+      }
+    ]
+  },
+  {
+    "facility_id": "IN-MM-FTL-001",
+    "facility_name": "Fortis Healthcare Mumbai - Mulund",
+    "facility_type": "Multispecialty Hospital",
+    "state": "Maharashtra",
+    "state_code": "MH",
+    "district": "Mumbai",
+    "city": "Mumbai",
+    "postal_code": "400043",
+    "nabh_accredited": true,
+    "jci_accredited": true,
+    "phone": "+919167997999",
+    "email": "inquiry@fortismumbai.com",
+    "website": "https://www.fortishealthcare.com",
+    "description": "Comprehensive multispecialty healthcare facility with advanced technology",
+    "services": [
+      {
+        "service_name": "लेप्रोस्कोपिक पित्ताशय की थैली हटाना (Laparoscopic Cholecystectomy)",
+        "description": "Minimally invasive gallbladder removal surgery",
+        "department": "General Surgery",
+        "department_code": "GENE",
+        "uhi_code": "SURG-3001",
+        "pricing": {
+          "total_cost": 650000,
+          "base_procedure": 400000,
+          "facility_charges": 150000,
+          "surgeon_fee": 100000,
+          "currency": "INR"
+        },
+        "outcomes": {
+          "success_rate": 97.8,
+          "complication_rate": 1.5
+        }
+      },
+      {
+        "service_name": "कैंसर के लिए कीमोथेरेपी (Chemotherapy for Cancer)",
+        "description": "Intravenous chemotherapy administration",
+        "department": "Oncology",
+        "department_code": "ONCO",
+        "uhi_code": "CHEM-001",
+        "pricing": {
+          "total_cost": 250000,
+          "base_procedure": 150000,
+          "facility_charges": 50000,
+          "nurse_care": 50000,
+          "currency": "INR"
+        },
+        "outcomes": {
+          "success_rate": 72.5,
+          "complication_rate": 12.0
+        }
+      }
+    ]
+  },
+  {
+    "facility_id": "IN-MP-RUR-001",
+    "facility_name": "Rural Clinic Network - Indore (Tier 2 Hub)",
+    "facility_type": "General Hospital",
+    "state": "Madhya Pradesh",
+    "state_code": "MP",
+    "district": "Indore",
+    "city": "Indore",
+    "postal_code": "452001",
+    "nabh_accredited": false,
+    "jci_accredited": false,
+    "phone": "+917312708000",
+    "email": "contact@ruralclinic.co.in",
+    "website": "https://www.ruralclinic.co.in",
+    "description": "Regional hub connecting rural clinics with urban specialists",
+    "services": [
+      {
+        "service_name": "सामान्य परीक्षा और परामर्श (General Examination and Consultation)",
+        "description": "Primary care consultation with general physician",
+        "department": "General Medicine",
+        "department_code": "GENE_MED",
+        "uhi_code": "CON-0001",
+        "pricing": {
+          "total_cost": 500,
+          "base_procedure": 300,
+          "facility_charges": 200,
+          "currency": "INR"
+        },
+        "outcomes": {
+          "success_rate": 95.0,
+          "complication_rate": 0.0
+        }
+      },
+      {
+        "service_name": "रक्त परीक्षण और प्रयोगशाला विश्लेषण (Blood Tests and Lab Analysis)",
+        "description": "Basic blood work and clinical laboratory tests",
+        "department": "Laboratory",
+        "department_code": "LAB",
+        "uhi_code": "LAB-001",
+        "pricing": {
+          "total_cost": 1200,
+          "base_procedure": 800,
+          "facility_charges": 400,
+          "currency": "INR"
+        },
+        "outcomes": {
+          "success_rate": 99.0,
+          "complication_rate": 0.0
+        }
+      }
+    ]
+  }
+]
