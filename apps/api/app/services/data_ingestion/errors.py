@@ -46,13 +46,13 @@ class MapperError(IngestError):
 
 
 class LLMError(MapperError):
-    """Error calling Claude API"""
+    """Error calling Evijnar Health AI"""
     def __init__(self, message: str, details: dict = None):
         super().__init__(message, "LLM_ERROR", details)
 
 
 class LLMParsingError(MapperError):
-    """Claude response couldn't be parsed"""
+    """AI response couldn't be parsed"""
     def __init__(self, message: str, details: dict = None):
         super().__init__(message, "LLM_PARSING_ERROR", details)
 

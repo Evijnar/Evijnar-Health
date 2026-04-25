@@ -29,7 +29,11 @@
   }
 
   body {
-    @apply bg-white;
+    @apply bg-slate-950 text-slate-100;
+    background-image:
+      radial-gradient(circle at top left, rgba(16, 185, 129, 0.18), transparent 30%),
+      radial-gradient(circle at top right, rgba(56, 189, 248, 0.12), transparent 32%),
+      linear-gradient(180deg, #020617 0%, #0f172a 54%, #020617 100%);
     font-variant-numeric: tabular-nums;
   }
 
@@ -152,12 +156,112 @@
   .grid-2-col {
     @apply grid-responsive grid-cols-1 md:grid-cols-2;
   }
+
+  .dashboard-shell {
+    @apply relative isolate overflow-hidden;
+  }
+
+  .dashboard-grid {
+    @apply pointer-events-none absolute inset-0 opacity-30;
+    background-image:
+      linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: radial-gradient(circle at center, black, transparent 78%);
+  }
+
+  .dashboard-orb {
+    @apply pointer-events-none absolute rounded-full blur-3xl;
+    animation: float 16s ease-in-out infinite;
+  }
+
+  .dashboard-orb-a {
+    top: -6rem;
+    left: -4rem;
+    height: 18rem;
+    width: 18rem;
+    background: rgba(16, 185, 129, 0.22);
+  }
+
+  .dashboard-orb-b {
+    right: -5rem;
+    top: 18rem;
+    height: 22rem;
+    width: 22rem;
+    background: rgba(56, 189, 248, 0.18);
+    animation-delay: -5s;
+  }
+
+  .glass-panel {
+    @apply relative rounded-[2rem] border border-white/10 bg-slate-900/75 shadow-[0_24px_80px_rgba(2,6,23,0.55)] backdrop-blur-xl;
+  }
+
+  .glass-card {
+    @apply rounded-[1.5rem] border border-white/10 bg-white/5 shadow-[0_16px_60px_rgba(2,6,23,0.3)] backdrop-blur-xl;
+  }
+
+  .metric-card {
+    @apply rounded-[1.5rem] border border-white/10 bg-white/5 p-4 shadow-[0_12px_36px_rgba(2,6,23,0.2)] backdrop-blur-xl;
+  }
+
+  .nav-chip {
+    @apply inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm text-slate-300 transition-all duration-200 hover:border-white/20 hover:bg-white/10;
+  }
+
+  .status-pill {
+    @apply inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium uppercase tracking-[0.2em];
+  }
+
+  .primary-action {
+    @apply inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400 px-4 py-2.5 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-400/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-emerald-300;
+  }
+
+  .section-kicker {
+    @apply text-xs font-semibold uppercase tracking-[0.35em] text-emerald-300;
+  }
+
+  .bar-track {
+    @apply h-2 overflow-hidden rounded-full bg-white/10;
+  }
+
+  .bar-fill {
+    @apply h-full rounded-full bg-gradient-to-r from-emerald-400 via-cyan-300 to-sky-400 transition-all duration-700 ease-out;
+  }
+
+  .timeline-node {
+    @apply flex h-10 w-10 flex-none items-center justify-center rounded-2xl bg-emerald-400/15 text-sm font-semibold text-emerald-200;
+  }
+
+  .reveal-up {
+    animation: fade-up 700ms ease both;
+  }
 }
 
 /* Smooth transitions for mobile */
 @media (prefers-reduced-motion: no-preference) {
   html {
     scroll-behavior: smooth;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, 18px, 0) scale(1.04);
   }
 }
 

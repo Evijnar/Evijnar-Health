@@ -70,8 +70,8 @@ CORS_ORIGINS=["http://localhost:3000","http://localhost:8000"]
 # Redis
 REDIS_URL=redis://localhost:6379
 
-# Anthropic API (optional for development)
-ANTHROPIC_API_KEY=sk-test-key
+# Evijnar Health AI knowledge base (optional for development)
+EVIJNAR_AI_KB_URL=
 
 # HIPAA
 HIPAA_AUDIT_LOG_ENABLED=true
@@ -173,7 +173,7 @@ Settings → Secrets and variables → Actions
 - SECRET_KEY          (production secret)
 - JWT_SECRET          (production JWT secret)
 - ENCRYPTION_KEY_*    (production encryption keys)
-- ANTHROPIC_API_KEY   (API key for Claude)
+- EVIJNAR_AI_KB_URL   (optional remote knowledge base for Evijnar Health AI)
 - TWILIO_*           (SMS service credentials)
 ```
 

@@ -9,7 +9,7 @@ from typing import Optional
 
 from ..models import NormalizedPriceNormalizerData, IngestSource
 from ..errors import MapperError, LLMParsingError
-from ...utils.llm_client import get_llm_client
+from ...utils.llm_client import get_evijnar_health_ai_client
 
 logger = logging.getLogger("evijnar.ingest.normalizer_mapper")
 
@@ -57,8 +57,8 @@ Respond with valid JSON always.
         self.llm_client = None
 
     async def initialize(self):
-        """Initialize LLM client"""
-        self.llm_client = await get_llm_client()
+        """Initialize AI client"""
+        self.llm_client = await get_evijnar_health_ai_client()
 
     async def map_cpt_code(
         self,
@@ -99,11 +99,11 @@ Respond with valid JSON always.
                     us_median_cost_usd=self._get_median_cost(cpt_code),
                 )
 
-            # Call Claude for unknown codes
+            # Call Evijnar Health AI for unknown codes
             prompt = self._build_prompt(cpt_code, cpt_description)
-            logger.debug(f"Mapping CPT code {cpt_code} via Claude")
+            logger.debug(f"Mapping CPT code {cpt_code} via Evijnar Health AI")
 
-            response = await self.llm_client.call_claude(
+            response = await self.llm_client.call_eh_ai(
                 prompt=prompt,
                 system_prompt=self.SYSTEM_PROMPT,
                 response_format="json",
@@ -112,7 +112,7 @@ Respond with valid JSON always.
                 cache_ttl=31536000,  # Cache forever (medical codes don't change)
             )
 
-            normalized = self._parse_claude_response(response, cpt_code, cpt_description)
+            normalized = self._parse_ai_response(response, cpt_code, cpt_description)
             logger.info(f"Mapped CPT {cpt_code} to ICD-10 {normalized.icd10_code}")
 
             return normalized
@@ -122,7 +122,7 @@ Respond with valid JSON always.
             raise MapperError(f"Failed to map CPT code: {str(e)}", details={"cpt_code": cpt_code})
 
     def _build_prompt(self, cpt_code: str, cpt_description: str) -> str:
-        """Build Claude prompt for code mapping"""
+        """Build Evijnar Health AI prompt for code mapping"""
         return f"""Map this US CPT code to international medical coding standards:
 
 CPT Code: {cpt_code}
@@ -149,8 +149,8 @@ Respond with JSON:
     "source": "Medicare fee schedule 2024-2025"
 }}"""
 
-    def _parse_claude_response(self, response: dict, cpt_code: str, cpt_description: str) -> NormalizedPriceNormalizerData:
-        """Parse Claude response into NormalizedPriceNormalizerData"""
+    def _parse_ai_response(self, response: dict, cpt_code: str, cpt_description: str) -> NormalizedPriceNormalizerData:
+        """Parse AI response into NormalizedPriceNormalizerData"""
         try:
             icd10_code = response.get("icd10_code")
             if not icd10_code:
@@ -171,7 +171,7 @@ Respond with JSON:
             return normalized
 
         except (KeyError, ValueError, TypeError) as e:
-            logger.error(f"Failed to parse normalizer mapping response: {str(e)}")
+            logger.error(f"Failed to parse AI mapping response: {str(e)}")
             raise LLMParsingError(f"Failed to parse price normalizer mapping: {str(e)}")
 
     def _estimate_complexity(self, cpt_code: str) -> int:

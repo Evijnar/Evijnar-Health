@@ -12,7 +12,7 @@ import asyncio
 
 from sqlalchemy.exc import IntegrityError
 
-from ..models import (
+from .models import (
     RawHospitalData,
     NormalizedHospitalData,
     NormalizedProcedureData,
@@ -22,10 +22,10 @@ from ..models import (
     IngestSource,
     IngestMetrics,
 )
-from ..errors import IngestError, DatabaseError, EngineError
-from ..loaders import HHSLoader, EHDSLoader, ABDMLoader, JsonLoader
-from ..mappers import HospitalMapper, ProcedureMapper, NormalizerMapper
-from ...utils.llm_client import get_llm_client
+from .errors import IngestError, DatabaseError, EngineError
+from .loaders import HHSLoader, EHDSLoader, ABDMLoader, JsonLoader
+from .mappers import HospitalMapper, ProcedureMapper, NormalizerMapper
+from ...utils.llm_client import get_evijnar_health_ai_client
 from ...repositories import (
     HospitalRepository,
     ProcedureRepository,
@@ -66,14 +66,14 @@ class DataIngestionEngine:
 
         # Track ingestion state
         self.report: Optional[IngestReport] = None
-        self.llm_client = None
+        self.ai_client = None
 
     async def initialize(self):
         """Initialize engine and dependencies"""
         await self.hospital_mapper.initialize()
         await self.procedure_mapper.initialize()
         await self.normalizer_mapper.initialize()
-        self.llm_client = await get_llm_client()
+        self.ai_client = await get_evijnar_health_ai_client()
         logger.info("DataIngestionEngine initialized")
 
     async def ingest_file(
@@ -434,6 +434,6 @@ class DataIngestionEngine:
 
     def get_llm_usage(self) -> Dict[str, Any]:
         """Get LLM usage statistics"""
-        if self.llm_client:
-            return self.llm_client.get_usage_stats()
+        if self.ai_client:
+            return self.ai_client.get_usage_stats()
         return {}

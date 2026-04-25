@@ -5,6 +5,8 @@ Uses Fernet (symmetric key cryptography) for simplicity and security.
 """
 
 import logging
+from typing import Optional
+
 from cryptography.fernet import Fernet, InvalidToken
 from app.config import settings
 

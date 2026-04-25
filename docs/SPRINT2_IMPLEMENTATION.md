@@ -6,7 +6,7 @@
 
 ## Overview
 
-Sprint 2 implements the **Data Ingestion Engine** - a production-ready system for parsing messy hospital price transparency data from three global sources (USA, Europe, India) and using Claude AI for intelligent mapping to standardized medical codes.
+Sprint 2 implements the **Data Ingestion Engine** - a production-ready system for parsing messy hospital price transparency data from three global sources (USA, Europe, India) and using Evijnar Health AI for intelligent mapping to standardized medical codes.
 
 ## Architecture
 
@@ -18,7 +18,7 @@ Raw JSON Files (HHS/EHDS/ABDM)
     ↓
 [RawHospitalData] (denormalized, messy)
     ↓
-[Claude-Powered Mappers]
+[Evijnar Health AI-Powered Mappers]
   ├─ Hospital Mapper: Normalize names, classify types
   ├─ Procedure Mapper: Map to ICD-10, estimate complexity
   └─ Normalizer Mapper: CPT ↔ ICD-10 ↔ UHI codes
@@ -45,13 +45,13 @@ Raw JSON Files (HHS/EHDS/ABDM)
 - **loaders/__init__.py**: Loader exports
 
 ### Mappers (4 files)
-- **hospital_mapper.py**: Claude-powered hospital normalization
-- **procedure_mapper.py**: Claude-powered procedure → ICD-10 mapping
-- **normalizer_mapper.py**: Claude-powered CPT ↔ ICD-10 ↔ UHI mapping
+- **hospital_mapper.py**: Evijnar Health AI-powered hospital normalization
+- **procedure_mapper.py**: Evijnar Health AI-powered procedure → ICD-10 mapping
+- **normalizer_mapper.py**: Evijnar Health AI-powered CPT ↔ ICD-10 ↔ UHI mapping
 - **mappers/__init__.py**: Mapper exports
 
 ### LLM Integration (1 file)
-- **llm_client.py**: Anthropic Claude wrapper with Redis caching, retries, token tracking, cost estimation
+- **llm_client.py**: Evijnar Health AI wrapper with Redis caching, retries, token tracking, cost estimation
 
 ### Orchestration (1 file)
 - **ingestion_engine.py**: Main orchestrator - coordinates loaders, mappers, error handling, HIPAA logging
@@ -61,7 +61,7 @@ Raw JSON Files (HHS/EHDS/ABDM)
 - **scripts/ingest_data.py**: CLI script for local testing
 
 ### Configuration & Data (2 files)
-- **config.py**: Updated with Anthropic API key, Redis URL, batch size settings
+- **config.py**: Updated with Evijnar Health AI knowledge-base URL, Redis URL, batch size settings
 - **Sample JSON files** (3 realistic 2026 examples):
   - `samples/hhs_2026_sample.json`
   - `samples/ehds_2026_sample.json`
@@ -75,10 +75,10 @@ Raw JSON Files (HHS/EHDS/ABDM)
 - **ABDMLoader**: Parses Indian ABDM/UHI facility records (UHI codes, regional tier classification)
 - Flexible enough to handle variations in source formatting
 
-### 2. Claude-Powered Intelligent Mapping
+### 2. Evijnar Health AI-Powered Intelligent Mapping
 
 #### Hospital Mapper
-- Claude classifies messy hospital names into standardized types
+- Evijnar Health AI classifies messy hospital names into standardized types
 - Handles abbreviations, alternate names, descriptive text
 - ~24h cache for identical hospitals
 - Confidence score tracking
@@ -97,7 +97,7 @@ Raw JSON Files (HHS/EHDS/ABDM)
 - Permanent cache (medical codes don't change)
 - Known mappings seed data to avoid redundant LLM calls
 
-### 3. LLM Client (Claude API Integration)
+### 3. AI Client (Evijnar Health AI Integration)
 - **Structured Output**: JSON response format with strict parsing
 - **Caching**: Redis-backed cache for all LLM responses to reduce costs
 - **Retry Logic**: Exponential backoff for rate limits and connection errors
@@ -117,7 +117,7 @@ Raw JSON Files (HHS/EHDS/ABDM)
 ```
 POST   /api/v1/admin/ingest/upload               # Upload and ingest JSON file
 GET    /api/v1/admin/ingest/health               # Service health check
-POST   /api/v1/admin/ingest/test-mappings        # Test Claude integration with samples
+POST   /api/v1/admin/ingest/test-mappings        # Test Evijnar Health AI integration with samples
 GET    /api/v1/admin/ingest/sources              # List available data sources
 ```
 
@@ -135,7 +135,7 @@ Outputs human-readable report with:
 - Error summaries (first 5 errors listed)
 - Processing time
 
-## Claude Prompts (System Design)
+## Evijnar Health AI Prompts (System Design)
 
 ### Hospital Classification Prompt
 Extracts: normalized name, hospital type (SPECIALTY_CENTER/GENERAL/DIAGNOSTIC/NURSING), postal code, confidence score
@@ -213,7 +213,7 @@ All errors include:
 ### Configuration (Updated)
 ```python
 # New settings added to config.py:
-anthropic_api_key: Optional[str]        # Claude API key
+evijnar_ai_kb_url: Optional[str]        # Optional remote knowledge base URL
 redis_url: Optional[str]                # Cache URL
 ingest_batch_size: int = 100            # Batch size
 ingest_max_concurrent_llm: int = 5      # LLM concurrency
@@ -221,7 +221,7 @@ ingest_max_concurrent_llm: int = 5      # LLM concurrency
 
 ### Dependencies (Updated)
 Added to `pyproject.toml`:
-- `anthropic==0.31.0` (Claude SDK)
+- Evijnar Health AI uses local logic and optional remote knowledge-base JSON
 - Already have: `aioredis`, `sqlalchemy`, `pydantic`
 
 ### Router Registration
@@ -233,7 +233,7 @@ app.include_router(admin.router, tags=["Admin"])
 ### Environment Variables
 Updated `.env.example` with:
 ```
-ANTHROPIC_API_KEY=sk-ant-...
+EVIJNAR_AI_KB_URL=https://example.com/evijnar-ai-kb.json
 REDIS_URL=redis://localhost:6379
 INGEST_BATCH_SIZE=100
 INGEST_MAX_CONCURRENT_LLM=5
@@ -269,7 +269,7 @@ Each with realistic pricing in local currencies, outcomes data, and department s
 ## Verification Checklist
 
 - [x] All 15 files created with complete implementations
-- [x] Claude API wrapper with caching works (mock tested)
+- [x] Evijnar Health AI wrapper with caching works (mock tested)
 - [x] JSON loaders parse all three formats correctly
 - [x] Pydantic validation on all data models
 - [x] Error handling with granular exception hierarchy
