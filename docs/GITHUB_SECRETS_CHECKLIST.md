@@ -15,7 +15,7 @@ Click **"New organization secret"** 11 times and add:
 ☐ JWT_SECRET
 ☐ ENCRYPTION_KEY_PATIENT_DATA
 ☐ ENCRYPTION_KEY_PHARMA_DATA
-☐ ANTHROPIC_API_KEY
+☐ EVIJNAR_AI_KB_URL
 ☐ TWILIO_ACCOUNT_SID
 ☐ TWILIO_AUTH_TOKEN
 ☐ GOOGLE_MAPS_API_KEY
@@ -39,7 +39,7 @@ Click **"New organization secret"** 11 times and add:
 | JWT_SECRET | Generate: `python -c "import secrets; print(secrets.token_urlsafe(32))"` |
 | ENCRYPTION_KEY_PATIENT_DATA | Generate: `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"` |
 | ENCRYPTION_KEY_PHARMA_DATA | Generate: `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"` |
-| ANTHROPIC_API_KEY | console.anthropic.com (your API keys) |
+| EVIJNAR_AI_KB_URL | Optional JSON knowledge base endpoint for Evijnar Health AI |
 | TWILIO_ACCOUNT_SID | twilio.com (account settings) |
 | TWILIO_AUTH_TOKEN | twilio.com (account settings) |
 | GOOGLE_MAPS_API_KEY | console.cloud.google.com (API keys) |

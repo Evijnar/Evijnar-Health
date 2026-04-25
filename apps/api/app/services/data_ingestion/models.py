@@ -256,7 +256,7 @@ class IngestMetrics(BaseModel):
 # ============================================================================
 
 class HospitalMapperInput(BaseModel):
-    """Input to Claude for hospital mapping"""
+    """Input to Evijnar Health AI for hospital mapping"""
     name: str
     address_components: Dict[str, str]  # city, state, postal_code, country
     phone: Optional[str] = None
@@ -265,7 +265,7 @@ class HospitalMapperInput(BaseModel):
 
 
 class ProcedureMapperInput(BaseModel):
-    """Input to Claude for procedure mapping"""
+    """Input to Evijnar Health AI for procedure mapping"""
     description: str
     price: Optional[float] = None
     code_hint: Optional[str] = None  # May have partial code
@@ -273,7 +273,7 @@ class ProcedureMapperInput(BaseModel):
 
 
 class NormalizerMapperInput(BaseModel):
-    """Input to Claude for normalizer/CPT mapping"""
+    """Input to Evijnar Health AI for normalizer/CPT mapping"""
     cpt_code: str
     cpt_description: str
     source: IngestSource

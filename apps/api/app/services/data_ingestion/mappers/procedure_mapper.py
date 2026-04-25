@@ -1,6 +1,6 @@
 # apps/api/app/services/data_ingestion/mappers/procedure_mapper.py
 """
-Procedure mapper using Claude for intelligent mapping to ICD-10 and complexity scoring.
+Procedure mapper using Evijnar Health AI for intelligent mapping to ICD-10 and complexity scoring.
 """
 
 import logging
@@ -8,13 +8,13 @@ from typing import List
 
 from ..models import RawProcedureData, NormalizedProcedureData, IngestSource
 from ..errors import MapperError, LLMError, LLMParsingError
-from ....utils.llm_client import get_llm_client
+from ....utils.llm_client import get_evijnar_health_ai_client
 
 logger = logging.getLogger("evijnar.ingest.procedure_mapper")
 
 
 class ProcedureMapper:
-    """Maps procedure data to standardized clinical codes using Claude"""
+    """Maps procedure data to standardized clinical codes using Evijnar Health AI"""
 
     SYSTEM_PROMPT = """You are a medical coding expert familiar with ICD-10, CPT, and UHI coding systems.
 Your task is to standardize procedure/service descriptions into clinical codes.
@@ -32,8 +32,8 @@ Always respond with valid JSON.
         self.llm_client = None
 
     async def initialize(self):
-        """Initialize LLM client"""
-        self.llm_client = await get_llm_client()
+        """Initialize AI client"""
+        self.llm_client = await get_evijnar_health_ai_client()
 
     async def map_procedures(self, raw_procedures: List[RawProcedureData]) -> List[NormalizedProcedureData]:
         """
@@ -63,7 +63,7 @@ Always respond with valid JSON.
 
     async def map_procedure(self, raw_proc: RawProcedureData, source: IngestSource = IngestSource.HHS_TRANSPARENCY) -> NormalizedProcedureData:
         """
-        Map single procedure to normalized format using Claude.
+        Map single procedure to normalized format using Evijnar Health AI.
 
         Args:
             raw_proc: Raw procedure data
@@ -82,7 +82,7 @@ Always respond with valid JSON.
             prompt = self._build_prompt(raw_proc)
 
             logger.debug(f"Mapping procedure: {raw_proc.description}")
-            response = await self.llm_client.call_claude(
+            response = await self.llm_client.call_eh_ai(
                 prompt=prompt,
                 system_prompt=self.SYSTEM_PROMPT,
                 response_format="json",
@@ -91,7 +91,7 @@ Always respond with valid JSON.
                 cache_ttl=604800,  # Cache for 7 days
             )
 
-            normalized = self._parse_claude_response(response, raw_proc, source)
+            normalized = self._parse_ai_response(response, raw_proc, source)
             logger.debug(f"Mapped procedure to ICD-10: {normalized.icd10_code}, Complexity: {normalized.complexity_score}")
 
             return normalized
@@ -101,7 +101,7 @@ Always respond with valid JSON.
             raise MapperError(f"Failed to map procedure: {str(e)}", details={"procedure": raw_proc.description})
 
     def _build_prompt(self, raw: RawProcedureData) -> str:
-        """Build Claude prompt for procedure mapping"""
+        """Build Evijnar Health AI prompt for procedure mapping"""
         return f"""Map the following clinical procedure/service to standard coding:
 
 Description: {raw.description}
@@ -127,12 +127,12 @@ Respond with JSON:
     "confidence": 0.92
 }}"""
 
-    def _parse_claude_response(self, response: dict, raw: RawProcedureData, source: IngestSource) -> NormalizedProcedureData:
-        """Parse Claude response into NormalizedProcedureData"""
+    def _parse_ai_response(self, response: dict, raw: RawProcedureData, source: IngestSource) -> NormalizedProcedureData:
+        """Parse AI response into NormalizedProcedureData"""
         try:
             icd10_code = response.get("icd10_code")
             if not icd10_code:
-                raise ValueError("Missing ICD-10 code in Claude response")
+                raise ValueError("Missing ICD-10 code in AI response")
 
             complexity = response.get("complexity_score", 5)
             if not isinstance(complexity, int) or complexity < 1 or complexity > 10:
@@ -155,5 +155,5 @@ Respond with JSON:
             return normalized
 
         except (KeyError, ValueError, TypeError) as e:
-            logger.error(f"Failed to parse Claude response for procedure mapping: {str(e)}")
+            logger.error(f"Failed to parse AI response for procedure mapping: {str(e)}")
             raise LLMParsingError(f"Failed to parse procedure mapping response: {str(e)}")

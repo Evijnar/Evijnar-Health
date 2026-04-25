@@ -4,8 +4,10 @@ Configuration management for Evijnar API.
 Follows 12-factor app principles for environment-based config.
 """
 
-from pydantic_settings import BaseSettings
+import json
 from typing import Optional
+
+from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     """Core application settings"""
@@ -36,7 +38,23 @@ class Settings(BaseSettings):
     encryption_key_pharma_data: str
 
     # CORS
-    cors_origins: list[str] = ["http://localhost:3000"]
+    cors_origins: str = "http://localhost:3000"
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        value = (self.cors_origins or "").strip()
+        if not value:
+            return ["http://localhost:3000"]
+        if value.startswith("["):
+            try:
+                parsed = json.loads(value)
+                if isinstance(parsed, list):
+                    cleaned = [str(origin).strip() for origin in parsed if str(origin).strip()]
+                    return cleaned or ["http://localhost:3000"]
+            except json.JSONDecodeError:
+                pass
+        parsed = [origin.strip() for origin in value.split(",") if origin.strip()]
+        return parsed or ["http://localhost:3000"]
 
     # External APIs
     google_maps_api_key: Optional[str] = None
@@ -51,9 +69,9 @@ class Settings(BaseSettings):
     feature_recovery_bridge_enabled: bool = True
     feature_rural_financing_enabled: bool = True
 
-    # Data Ingestion (Claude API & Caching)
-    anthropic_api_key: Optional[str] = None  # For Claude-powered data mapping
-    redis_url: Optional[str] = "redis://localhost:6379"  # Cache for LLM responses
+    # Data Ingestion (Evijnar Health AI & Caching)
+    evijnar_ai_kb_url: Optional[str] = None  # Optional remote knowledge base for Evijnar Health AI
+    redis_url: Optional[str] = "redis://localhost:6379"  # Cache for AI responses
     ingest_batch_size: int = 100
     ingest_max_concurrent_llm: int = 5
 

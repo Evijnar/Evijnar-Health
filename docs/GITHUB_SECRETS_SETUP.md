@@ -74,10 +74,10 @@ Example: XYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLM2R=
 
 ### External APIs
 
-#### `ANTHROPIC_API_KEY`
+#### `EVIJNAR_AI_KB_URL`
 ```
-Value: Your Anthropic API key (from console.anthropic.com)
-Example: sk-ant-v1-abcd1234efgh5678ijkl9012mnop3456...
+Value: Optional JSON knowledge base endpoint for Evijnar Health AI
+Example: https://example.com/evijnar-ai-kb.json
 ```
 
 #### `TWILIO_ACCOUNT_SID`
@@ -117,7 +117,7 @@ For different environments, create secrets with prefixes:
 DEV_DATABASE_URL
 DEV_SECRET_KEY
 DEV_JWT_SECRET
-DEV_ANTHROPIC_API_KEY
+DEV_EVIJNAR_AI_KB_URL
 ```
 
 ### Staging Environment
@@ -125,7 +125,7 @@ DEV_ANTHROPIC_API_KEY
 STAGING_DATABASE_URL
 STAGING_SECRET_KEY
 STAGING_JWT_SECRET
-STAGING_ANTHROPIC_API_KEY
+STAGING_EVIJNAR_AI_KB_URL
 ```
 
 ### Production Environment
@@ -133,7 +133,7 @@ STAGING_ANTHROPIC_API_KEY
 PROD_DATABASE_URL
 PROD_SECRET_KEY
 PROD_JWT_SECRET
-PROD_ANTHROPIC_API_KEY
+PROD_EVIJNAR_AI_KB_URL
 PROD_ENCRYPTION_KEY_PATIENT_DATA
 PROD_ENCRYPTION_KEY_PHARMA_DATA
 ```
@@ -165,7 +165,7 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          EVIJNAR_AI_KB_URL: ${{ secrets.EVIJNAR_AI_KB_URL }}
         run: |
           cd apps/api
           pip install -r requirements.txt

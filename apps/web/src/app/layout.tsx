@@ -3,8 +3,8 @@ import { ReactNode } from 'react';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Evijnar - Global Healthcare Arbitrage',
-  description: 'Access world-class healthcare at transparent, affordable prices',
+  title: 'Evijnar | Global Health Arbitrage Dashboard',
+  description: 'An animated dashboard covering global healthcare pricing, recovery, security, and financing.',
   keywords: [
     'healthcare arbitrage',
     'medical tourism',

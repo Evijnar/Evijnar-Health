@@ -167,8 +167,8 @@ async def ingest_health(engine: DataIngestionEngine = Depends(get_engine)) -> di
 @router.post("/api/v1/admin/ingest/test-mappings")
 async def test_mappings(engine: DataIngestionEngine = Depends(get_engine)) -> dict:
     """
-    Test LLM mapping with sample data.
-    Useful for validating Claude integration.
+    Test AI mapping with sample data.
+    Useful for validating Evijnar Health AI integration.
     """
     from app.services.data_ingestion.models import RawHospitalData, RawProcedureData
 

@@ -152,7 +152,7 @@ For the workflows to work, configure these GitHub Secrets in your repository:
 
 These are not required for Phase 3 tests but may be needed later:
 
-- `ANTHROPIC_API_KEY` - For Claude API calls in data mapping
+- `EVIJNAR_AI_KB_URL` - Optional remote knowledge base for Evijnar Health AI mapping
 - `SECRET_KEY` - JWT secret for authentication tests
 - `DATABASE_URL` - Custom database URL (default provided in workflow)
 

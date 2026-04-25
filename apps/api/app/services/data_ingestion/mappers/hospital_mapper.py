@@ -1,6 +1,6 @@
 # apps/api/app/services/data_ingestion/mappers/hospital_mapper.py
 """
-Hospital entity mapper using Claude for intelligent normalization.
+Hospital entity mapper using Evijnar Health AI for intelligent normalization.
 Maps messy hospital descriptions to standardized GlobalHospital format.
 """
 
@@ -9,13 +9,13 @@ from typing import Optional
 
 from ..models import RawHospitalData, NormalizedHospitalData, IngestSource
 from ..errors import MapperError, LLMError, LLMParsingError, ValidationError
-from ....utils.llm_client import get_llm_client
+from ....utils.llm_client import get_evijnar_health_ai_client
 
 logger = logging.getLogger("evijnar.ingest.hospital_mapper")
 
 
 class HospitalMapper:
-    """Maps hospital data using Claude for intelligent normalization"""
+    """Maps hospital data using Evijnar Health AI for intelligent normalization"""
 
     SYSTEM_PROMPT = """You are a healthcare data standardization expert.
 Your task is to normalize hospital information from various international sources.
@@ -33,12 +33,12 @@ Always respond with valid JSON.
         self.llm_client = None
 
     async def initialize(self):
-        """Initialize LLM client"""
-        self.llm_client = await get_llm_client()
+        """Initialize AI client"""
+        self.llm_client = await get_evijnar_health_ai_client()
 
     async def map_hospital(self, raw_hospital: RawHospitalData) -> NormalizedHospitalData:
         """
-        Map raw hospital data to normalized format using Claude.
+        Map raw hospital data to normalized format using Evijnar Health AI.
 
         Args:
             raw_hospital: Raw hospital data from source
@@ -53,12 +53,12 @@ Always respond with valid JSON.
             if not self.llm_client:
                 await self.initialize()
 
-            # Build prompt for Claude
+            # Build prompt for Evijnar Health AI
             prompt = self._build_prompt(raw_hospital)
 
-            # Call Claude
+            # Call Evijnar Health AI
             logger.debug(f"Mapping hospital: {raw_hospital.name}")
-            response = await self.llm_client.call_claude(
+            response = await self.llm_client.call_eh_ai(
                 prompt=prompt,
                 system_prompt=self.SYSTEM_PROMPT,
                 response_format="json",
@@ -68,7 +68,7 @@ Always respond with valid JSON.
             )
 
             # Parse and validate response
-            normalized = self._parse_claude_response(response, raw_hospital)
+            normalized = self._parse_ai_response(response, raw_hospital)
 
             logger.info(f"Successfully mapped hospital: {normalized.name} (type: {normalized.hospital_type})")
             return normalized
@@ -81,7 +81,7 @@ Always respond with valid JSON.
             raise MapperError(f"Error mapping hospital: {str(e)}", details={"hospital": raw_hospital.name})
 
     def _build_prompt(self, raw: RawHospitalData) -> str:
-        """Build Claude prompt for hospital normalization"""
+        """Build Evijnar Health AI prompt for hospital normalization"""
         return f"""Normalize the following hospital information:
 
 Name: {raw.name}
@@ -110,17 +110,17 @@ Respond with JSON format:
     "reasoning": "explanation of classification"
 }}"""
 
-    def _parse_claude_response(self, response: dict, raw: RawHospitalData) -> NormalizedHospitalData:
-        """Parse Claude response into NormalizedHospitalData"""
+    def _parse_ai_response(self, response: dict, raw: RawHospitalData) -> NormalizedHospitalData:
+        """Parse AI response into NormalizedHospitalData"""
         try:
-            # Extract fields from Claude response
+            # Extract fields from AI response
             normalized_name = response.get("normalized_name", raw.name)
             hospital_type = response.get("hospital_type", "GENERAL_HOSPITAL")
 
             # Validate hospital type
             valid_types = ["SPECIALTY_CENTER", "GENERAL_HOSPITAL", "DIAGNOSTIC_CENTER", "NURSING_HOME"]
             if hospital_type not in valid_types:
-                logger.warning(f"Invalid hospital type from Claude: {hospital_type}, defaulting to GENERAL_HOSPITAL")
+                logger.warning(f"Invalid hospital type from Evijnar Health AI: {hospital_type}, defaulting to GENERAL_HOSPITAL")
                 hospital_type = "GENERAL_HOSPITAL"
 
             # Create normalized data object
@@ -148,5 +148,5 @@ Respond with JSON format:
             return normalized
 
         except (KeyError, ValueError, TypeError) as e:
-            logger.error(f"Failed to parse Claude response: {str(e)}, Response: {response}")
-            raise LLMParsingError(f"Failed to parse Claude response: {str(e)}", details={"response": response})
+            logger.error(f"Failed to parse AI response: {str(e)}, Response: {response}")
+            raise LLMParsingError(f"Failed to parse AI response: {str(e)}", details={"response": response})

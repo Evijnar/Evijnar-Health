@@ -64,7 +64,7 @@
 
 ### 1. **Success-Adjusted Value Ranking** 🏆
 - Ranks hospitals by Cost + Risk + Quality
-- AI-powered analysis using Claude API
+- AI-powered analysis using Evijnar Health AI
 - Outcome-driven decision support
 - Real-time price/quality scoring
 
@@ -143,7 +143,7 @@
 ### AI & External Services
 | Service | Purpose |
 |---------|---------|
-| **Claude API (Anthropic)** | Intelligent data mapping |
+| **Evijnar Health AI** | Intelligent data mapping |
 | **Razorpay / UPI 2.0** | Payment processing |
 | **Twilio** | SMS notifications (planned) |
 | **Google Maps** | Geographic routing |
@@ -306,7 +306,7 @@ Evijnar/
 │   │   │   │   │   │   ├── ehds_loader.py
 │   │   │   │   │   │   ├── abdm_loader.py
 │   │   │   │   │   │   └── json_loader.py
-│   │   │   │   │   ├── 📁 mappers/        # Claude-powered mappers
+│   │   │   │   │   ├── 📁 mappers/        # Evijnar Health AI-powered mappers
 │   │   │   │   │   │   ├── hospital_mapper.py
 │   │   │   │   │   │   ├── procedure_mapper.py
 │   │   │   │   │   │   └── normalizer_mapper.py
@@ -314,7 +314,7 @@ Evijnar/
 │   │   │   │   │   └── errors.py          # Custom exceptions
 │   │   │   │   │
 │   │   │   │   └── 📁 utils/              # Utilities
-│   │   │   │       └── llm_client.py      # Claude API client
+│   │   │   │       └── llm_client.py      # Evijnar Health AI client
 │   │   │   │
 │   │   │   ├── 📁 repositories/           # Data access layer
 │   │   │   │   ├── hospital.py
@@ -465,7 +465,7 @@ Raw Data Files           Loaders              Mapping              Database
 (HHS/EHDS/ABDM)                                                    
     │                                                                
     ├─ HHS JSON ────→ HHSLoader ──→ RawHospitalData  │               
-    ├─ EHDS JSON ───→ EHDSLoader ─→ RawHospitalData  ├──→ Claude API
+       ├─ EHDS JSON ───→ EHDSLoader ─→ RawHospitalData  ├──→ Evijnar Health AI
     └─ ABDM JSON ───→ ABDMLoader ─→ RawHospitalData  │   Mappers
                                      │                
                       HospitalMapper  ├─→ NormalizedHospitalData
@@ -1177,6 +1177,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - Built with [FastAPI](https://fastapi.tiangolo.com/), [Next.js](https://nextjs.org/), and [PostgreSQL](https://www.postgresql.org/)
-- Data mapping powered by [Claude API](https://anthropic.com/)
+- Data mapping powered by Evijnar Health AI
 - Infrastructure powered by [Docker](https://www.docker.com/) and [GitHub Actions](https://github.com/features/actions)
 - Inspiration from global healthcare transparency initiatives (HHS, EHDS, ABDM)
