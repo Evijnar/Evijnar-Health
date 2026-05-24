@@ -11,7 +11,6 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     AsyncEngine,
 )
-from sqlalchemy.pool import NullPool, QueuePool
 import logging
 
 from app.config import settings
@@ -22,6 +21,12 @@ logger = logging.getLogger("evijnar.db")
 # Global engine and session factory
 _engine: AsyncEngine = None
 _AsyncSessionLocal = None
+
+
+def _database_log_target(db_url: str) -> str:
+    if "@" not in db_url:
+        return db_url
+    return db_url.split("@", 1)[1]
 
 
 async def init_db():
@@ -37,15 +42,15 @@ async def init_db():
     if db_url.startswith("postgresql://"):
         db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
 
-    logger.info(f"Initializing database: {db_url.split('@')[1] if '@' in db_url else db_url}")
+    logger.info("Initializing database: %s", _database_log_target(db_url))
 
     try:
         # Create async engine with connection pooling
         _engine = create_async_engine(
             db_url,
             echo=settings.debug,  # Log all SQL statements if debug enabled
-            pool_size=20,  # Number of connections to keep in pool
-            max_overflow=10,  # Additional connections if pool exhausted
+            pool_size=10,  # Number of base connections kept in pool
+            max_overflow=20,  # Burst headroom under traffic spikes
             pool_pre_ping=True,  # Test connections before using
             pool_recycle=3600,  # Recycle connections after 1 hour
         )
@@ -63,10 +68,10 @@ async def init_db():
         async with _engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
 
-        logger.info("✅ Database initialized successfully")
+        logger.info("Database initialized successfully")
 
     except Exception as e:
-        logger.error(f"❌ Database initialization failed: {str(e)}")
+        logger.exception("Database initialization failed: %s", str(e))
         raise
 
 
@@ -99,7 +104,7 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
         try:
             yield session
         except Exception as e:
-            logger.error(f"Session error: {str(e)}")
+            logger.exception("Session error: %s", str(e))
             await session.rollback()
             raise
         finally:

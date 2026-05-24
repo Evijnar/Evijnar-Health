@@ -2,16 +2,11 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy workspace manifests and package files
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/web/package.json ./apps/web/package.json
-COPY packages/database/package.json ./packages/database/package.json
-
-# Install pnpm
-RUN npm install -g pnpm
+# Copy package manifest
+COPY package.json ./
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN npm install
 
 # Copy source code
 COPY . .
@@ -20,4 +15,4 @@ COPY . .
 EXPOSE 3000
 
 # Run dev server
-CMD ["pnpm", "--filter", "@evijnar/web", "dev"]
+CMD ["npm", "run", "dev"]

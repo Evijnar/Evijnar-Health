@@ -30,7 +30,8 @@ async def readiness_check():
 
         return {"ready": True, "database": "connected"}
     except Exception as exc:
+        detail = str(exc) if settings.is_development else "Database unavailable"
         return JSONResponse(
             status_code=503,
-            content={"ready": False, "database": "unavailable", "detail": str(exc)},
+            content={"ready": False, "database": "unavailable", "detail": detail},
         )

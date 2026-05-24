@@ -36,11 +36,11 @@ check_prerequisites() {
         echo -e "${GREEN}✓ Node.js found${NC}"
     fi
 
-    if ! command -v pnpm &> /dev/null; then
-        echo -e "${RED}✗ pnpm not found (install with: npm install -g pnpm)${NC}"
+    if ! command -v npm &> /dev/null; then
+        echo -e "${RED}✗ npm not found${NC}"
         missing=1
     else
-        echo -e "${GREEN}✓ pnpm found${NC}"
+        echo -e "${GREEN}✓ npm found${NC}"
     fi
 
     if ! command -v docker &> /dev/null; then
@@ -120,7 +120,7 @@ install_dependencies() {
     echo -e "${BLUE}Installing dependencies...${NC}"
 
     echo "Installing Node dependencies..."
-    pnpm install
+    npm install
     echo -e "${GREEN}✓ Node dependencies installed${NC}\n"
 
     echo "Installing Python dependencies..."
@@ -191,7 +191,7 @@ post_setup_instructions() {
     echo "   - Docs: http://localhost:8000/docs"
     echo ""
     echo -e "${YELLOW}Useful Commands:${NC}"
-    echo "  pnpm dev              - Start all services"
+    echo "  npm run dev           - Start the frontend"
     echo "  docker-compose down   - Stop services"
     echo "  pre-commit run --all-files  - Run security checks"
     echo "  pytest apps/api/tests - Run tests"

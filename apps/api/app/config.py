@@ -39,6 +39,7 @@ class Settings(BaseSettings):
 
     # CORS
     cors_origins: str = "http://localhost:3000"
+    trusted_hosts: str = "localhost,127.0.0.1"
 
     @property
     def cors_origins_list(self) -> list[str]:
@@ -55,6 +56,26 @@ class Settings(BaseSettings):
                 pass
         parsed = [origin.strip() for origin in value.split(",") if origin.strip()]
         return parsed or ["http://localhost:3000"]
+
+    @property
+    def trusted_hosts_list(self) -> list[str]:
+        value = (self.trusted_hosts or "").strip()
+        if not value:
+            return ["localhost", "127.0.0.1"]
+        if value.startswith("["):
+            try:
+                parsed = json.loads(value)
+                if isinstance(parsed, list):
+                    cleaned = [str(host).strip() for host in parsed if str(host).strip()]
+                    return cleaned or ["localhost", "127.0.0.1"]
+            except json.JSONDecodeError:
+                pass
+        parsed = [host.strip() for host in value.split(",") if host.strip()]
+        return parsed or ["localhost", "127.0.0.1"]
+
+    @property
+    def is_development(self) -> bool:
+        return self.app_env.lower() == "development"
 
     # External APIs
     google_maps_api_key: Optional[str] = None

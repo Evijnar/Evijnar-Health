@@ -21,7 +21,7 @@ class HIPAALoggingMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(self, request: Request, call_next):
-        start_time = time.time()
+        start_time = time.perf_counter()
 
         # Extract client IP
         client_ip = request.client.host if request.client else "unknown"
@@ -29,23 +29,14 @@ class HIPAALoggingMiddleware(BaseHTTPMiddleware):
         # Extract user info (from JWT token if available)
         user_id = request.headers.get("x-user-id", "anonymous")
 
-        # Request metadata
-        request_body = ""
-        if request.method in ["POST", "PUT", "PATCH"]:
-            try:
-                request_body = await request.body()
-                # Don't log sensitive data in body
-            except Exception:
-                pass
-
         response = await call_next(request)
 
         # Calculate processing time
-        process_time = time.time() - start_time
+        process_time = time.perf_counter() - start_time
 
         # Audit log entry
         audit_entry = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.utcnow().isoformat() + "Z",
             "method": request.method,
             "path": request.url.path,
             "status_code": response.status_code,
@@ -87,9 +78,9 @@ class EncryptionHeaderMiddleware(BaseHTTPMiddleware):
             request.url.path.startswith(path) for path in sensitive_paths
         )
 
-        if is_sensitive and request.method in ["POST", "PUT", "PATCH"]:
+        if is_sensitive and request.method in ("POST", "PUT", "PATCH"):
             # Verify TLS
-            if not request.scope.get("scheme") == "https" and settings.app_env != "development":
+            if request.scope.get("scheme") != "https" and not settings.is_development:
                 return PlainTextResponse(
                     "HTTPS required for sensitive endpoints",
                     status_code=403,

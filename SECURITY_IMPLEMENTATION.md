@@ -292,7 +292,7 @@ nano apps/web/.env.local
 
 # Start development
 docker-compose up -d
-pnpm dev
+npm run dev
 ```
 
 ### Verify Security Setup

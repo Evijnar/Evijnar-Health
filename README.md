@@ -118,6 +118,33 @@
 | **FastAPI** | Async Python web framework | 0.104+ |
 | **SQLAlchemy** | ORM for database | 2.0+ |
 | **Pydantic** | Data validation | 2.5+ |
+
+---
+
+## Repository Maintenance Helpers
+
+This repository includes helper scripts to bring the workspace into a "pristine" development state:
+
+- `scripts/cleanup_repo.sh` — safely removes build artifacts, caches and temporary files. Supports `--dry`, `--yes`, and `--deep` to include `node_modules`/venv removals.
+- `scripts/check_structure.sh` — scans for files outside canonical app locations and suggests (or applies with `--apply`) safe moves into `apps/api/app/` or `apps/web/src/components`.
+- `scripts/format_repo.sh` — runs `ruff`, `black`, `isort` for Python and frontend checks (`npm run type-check` / `npm run lint`) if available.
+
+Run these from the repo root (example):
+
+```bash
+./scripts/cleanup_repo.sh --dry
+./scripts/check_structure.sh
+./scripts/format_repo.sh
+```
+
+Use `--apply` with `check_structure.sh` to automatically move files that look misplaced.
+
+Make scripts executable if needed:
+
+```bash
+chmod +x scripts/*.sh
+```
+
 | **Alembic** | Database migrations | 1.12+ |
 | **Uvicorn** | ASGI server | 0.24+ |
 | **Python** | Runtime | 3.11+ |
@@ -138,7 +165,7 @@
 | **pytest** | Python testing framework | 7.4+ |
 | **pytest-asyncio** | Async test support | 0.21+ |
 | **Codecov** | Coverage reporting | Cloud |
-| **pnpm** | Package manager (monorepo) | Latest |
+| **npm** | Package manager (runtime setup) | Latest |
 
 ### AI & External Services
 | Service | Purpose |
@@ -170,17 +197,12 @@ git clone <repository>
 cd Evijnar
 ```
 
-**2. Install Global Tools**
+**2. Install Dependencies**
 ```bash
-npm install -g pnpm
+npm install
 ```
 
-**3. Install Dependencies**
-```bash
-pnpm install
-```
-
-**4. Configure Environment**
+**3. Configure Environment**
 ```bash
 # API
 cp apps/api/.env.example apps/api/.env
@@ -192,7 +214,7 @@ cp packages/database/.env.example packages/database/.env
 cp apps/web/.env.example apps/web/.env
 ```
 
-**5. Start Services (Recommended)**
+**4. Start Services (Recommended)**
 ```bash
 # Option A: Docker Compose (includes PostgreSQL + Redis)
 docker-compose up -d
@@ -213,10 +235,10 @@ python run.py
 
 # Terminal 4 - Frontend
 cd apps/web
-pnpm dev
+npm run dev
 ```
 
-**6. Setup Database**
+**5. Setup Database**
 ```bash
 cd apps/api
 alembic upgrade head
@@ -238,9 +260,9 @@ psql -U postgres -d evijnar -c "SELECT version();"
 
 **Development**
 ```bash
-pnpm dev              # Run all services
-pnpm type-check       # TypeScript check
-pnpm lint             # Run linters
+npm run dev           # Run the frontend
+npm run type-check    # TypeScript check
+npm run test          # Run lint checks
 ```
 
 **Testing**
@@ -402,7 +424,6 @@ Evijnar/
 │   └── abdm_2026_sample.json
 │
 ├── docker-compose.yml                     # Docker orchestration
-├── pnpm-workspace.yaml                    # Monorepo configuration
 ├── package.json                           # Root package
 ├── .gitignore                             # Git exclusions
 ├── README.md                              # This file

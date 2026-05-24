@@ -1,42 +1,32 @@
 import type { Metadata } from 'next';
 import { ReactNode } from 'react';
+import { Manrope, Sora } from 'next/font/google';
 import './globals.css';
+import ParticlesBackdrop from '@/components/ParticlesBackdrop';
+
+const bodyFont = Manrope({
+  subsets: ['latin'],
+  variable: '--font-body',
+  display: 'swap',
+});
+
+const displayFont = Sora({
+  subsets: ['latin'],
+  variable: '--font-display',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
-  title: 'Evijnar | Global Health Arbitrage Dashboard',
-  description: 'An animated dashboard covering global healthcare pricing, recovery, security, and financing.',
-  keywords: [
-    'healthcare arbitrage',
-    'medical tourism',
-    'surgery costs',
-    'affordable healthcare',
-    'JCI accredited hospitals',
-  ],
-  apple: {
-    statusBarStyle: 'black-translucent',
-  },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    viewportFit: 'cover',
-  },
+  title: 'Evijnar | Global Health Arbitrage Exchange',
+  description: 'Transparent hospital pricing, outcome-driven ranking, recovery monitoring, and financing for global healthcare access.',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="theme-color" content="#001F3F" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Evijnar" />
-      </head>
-      <body className="bg-white text-gray-900 overflow-x-hidden">
-        <div className="min-h-screen flex flex-col">
-          {children}
-        </div>
+    <html lang="en" className={`${bodyFont.variable} ${displayFont.variable}`}>
+      <body className="relative bg-black text-white">
+        <ParticlesBackdrop />
+        <div className="relative z-10">{children}</div>
       </body>
     </html>
   );

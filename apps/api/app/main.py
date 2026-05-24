@@ -8,11 +8,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from contextlib import asynccontextmanager
+import logging
 from app.config import settings
 from app.middleware import HIPAALoggingMiddleware, EncryptionHeaderMiddleware
 from app.db import init_db, close_db
 from app.routers import (
     auth,
+    dashboard,
     hospitals,
     pricing,
     bookings,
@@ -23,17 +25,19 @@ from app.routers import (
     admin,
 )
 
+logger = logging.getLogger("evijnar.api")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifecycle management for startup/shutdown"""
     # Startup
-    print(f"🚀 Starting Evijnar API v{settings.app_version}")
+    logger.info("Starting Evijnar API v%s", settings.app_version)
     await init_db()
-    print("✅ Database initialized")
+    logger.info("Database initialized")
     yield
     # Shutdown
     await close_db()
-    print("🛑 Shutting down Evijnar API")
+    logger.info("Shutting down Evijnar API")
 
 app = FastAPI(
     title=settings.app_name,
@@ -49,7 +53,7 @@ app = FastAPI(
 # Trusted Host - prevent HTTP Host header attacks
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=["*.evijnar.io", "localhost", "127.0.0.1"],
+    allowed_hosts=settings.trusted_hosts_list,
 )
 
 # CORS configuration
@@ -73,6 +77,9 @@ app.add_middleware(EncryptionHeaderMiddleware)
 
 # Health check
 app.include_router(health.router, tags=["Health"])
+
+# Dashboard overview
+app.include_router(dashboard.router, prefix=f"/api/{settings.api_version}/dashboard", tags=["Dashboard"])
 
 # Authentication
 app.include_router(auth.router, prefix=f"/api/{settings.api_version}/auth", tags=["Auth"])

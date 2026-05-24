@@ -123,7 +123,7 @@ Update your `.env` with these values.
 
 ```bash
 # Install Node dependencies
-pnpm install
+npm install
 
 # Install Python dependencies
 cd apps/api

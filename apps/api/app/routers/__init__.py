@@ -3,6 +3,7 @@
 
 from . import (
     auth,
+    dashboard,
     hospitals,
     pricing,
     bookings,
@@ -14,6 +15,7 @@ from . import (
 
 __all__ = [
     "auth",
+    "dashboard",
     "hospitals",
     "pricing",
     "bookings",
